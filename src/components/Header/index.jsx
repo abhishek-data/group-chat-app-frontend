@@ -6,7 +6,10 @@ const { Header, Content } = Layout;
 
 const AppHeader = ({ setIsLoggin, isloggedIn }) => {
 
-
+  const handleLogout = () => {
+    setIsLoggin(false)
+    localStorage.removeItem('token')
+  }
 
   return (
     <>
