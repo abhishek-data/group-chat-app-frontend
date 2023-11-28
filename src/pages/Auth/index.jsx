@@ -47,9 +47,9 @@ const Login = ({ setIsLoggin }) => {
           <Form.Item name='email' rules={[{ required: true, message: "Please Enter Valid Email" }]}>
             <Input placeholder='Enter Your Email' type='email' />
           </Form.Item>
-          <Form.Item name='phone' rules={[{ required: true, message: "Please Enter Valid Phone Number" }]}>
+          {!haveAccount && (<Form.Item name='phone' rules={[{ required: true, message: "Please Enter Valid Phone Number" }]}>
             <Input placeholder='Enter Your Phone Number' type='phone' />
-          </Form.Item>
+          </Form.Item>)}
           <Form.Item name='password' rules={[{ required: true, message: "Please Enter Valid Password" }]}>
             <Input.Password placeholder='Enter Your Password' />
           </Form.Item>
