@@ -5,7 +5,7 @@
 }
 
 .app {
-  width: 100vw;
+  /* width: 100vw; */
   height: 100vh;
   background: url('/chat-app-home.jpg');
   background-size: cover;
@@ -64,22 +64,32 @@
   border-color: #ff7875;
 }
 
-.content {
-  padding: 24px;
-}
 
-.expense-form {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  gap: 50px;
-}
+
+
 
 /* ChatPage.css */
 
-.chat-container {
-  max-width: 600px;
+.chat-page-container {
+  display: flex;
+  max-width: 1000px;
   margin: 50px auto;
+  gap:30px
+}
+
+.group-container {
+  flex: 2;
+  background-color: #79abe4;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 72vh;
+  border-radius: 10px;
+  opacity: 0.9;
+}
+
+.chat-container {
+  flex: 3;
   background-color: #f0ede6;
   padding: 10px;
   display: flex;
@@ -109,4 +119,15 @@
 
 .button {
   margin-top: 10px;
+}
+
+.custom-tab {
+  padding: 8px 16px; /* Adjust the padding as needed */
+  cursor: pointer;
+  border-radius: 4px;
+  background-color: #f0f0f0; /* Add a background color if desired */
+}
+
+.custom-tab:hover {
+  background-color: #d9d9d9; /* Add a different background color on hover if desired */
 }
