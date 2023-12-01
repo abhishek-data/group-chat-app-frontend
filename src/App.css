@@ -83,7 +83,7 @@
   padding: 10px;
   display: flex;
   flex-direction: column;
-  height: 72vh;
+  height: 80vh;
   border-radius: 10px;
   opacity: 0.9;
 }
@@ -130,4 +130,12 @@
 
 .custom-tab:hover {
   background-color: #d9d9d9; /* Add a different background color on hover if desired */
+}
+
+.create-group-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #ff7875;
+  padding: 10px;
+  border-radius: 10px;
 }

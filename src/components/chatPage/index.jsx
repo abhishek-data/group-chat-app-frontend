@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Input, Button, List, Avatar, message, Tabs } from 'antd';
 import axios from 'axios';
-import { API_URL } from '../../utils/config';
-import UserList from '../userList';
+import { API_URL, decodeToken } from '../../utils/config';
 import GroupList from '../groupList';
 
 const { TextArea } = Input;
@@ -46,7 +45,8 @@ const ChatPage = () => {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await axios.post(`${API_URL}/chat`, { text: newMessage }, { headers: { 'Authorization': token } })
+      const { name } = decodeToken(token)
+      const response = await axios.post(`${API_URL}/chat`, { text: newMessage, name: name }, { headers: { 'Authorization': token } })
       setIsChatAdded(prev => !prev)
     } catch (error) {
       message.error(error.message, 2)
@@ -56,14 +56,15 @@ const ChatPage = () => {
 
   return (
     <div className="chat-page-container">
-      <Tabs defaultActiveKey="1" tabBarStyle={{ justifyContent: 'space-around', width: '100%' }}>
+      {/* <Tabs defaultActiveKey="1" tabBarStyle={{ justifyContent: 'space-around', width: '100%' }}>
         <TabPane tab={<div className='custom-tab'>User</div>} key="1">
           <UserList />
         </TabPane>
         <TabPane tab={<div className='custom-tab'>Group</div>} key="2">
           <GroupList />
         </TabPane>
-      </Tabs>
+      </Tabs> */}
+      <GroupList />
       <div className="chat-container">
         <div className="message-list" ref={messageListRef}>
           <List
@@ -72,8 +73,8 @@ const ChatPage = () => {
             renderItem={(message, index) => (
               <List.Item>
                 <List.Item.Meta
-                  avatar={<Avatar>{message?.User?.fullname[0]}</Avatar>}
-                  title={message?.User?.fullname}
+                  avatar={<Avatar>{message?.name[0]}</Avatar>}
+                  title={message?.name}
                   description={message.message_text}
                 />
               </List.Item>

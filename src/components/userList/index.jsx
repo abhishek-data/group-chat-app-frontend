@@ -10,7 +10,7 @@ const UserList = () => {
     const chatListRef = useRef(null)
 
     return (
-        <div className="group-container">
+        <>
             <div className="message-list">
                 <List
                     itemLayout="horizontal"
@@ -28,10 +28,10 @@ const UserList = () => {
             </div>
             <div className="input-container">
                 <Button type="primary" className="button">
-                    Create Group
+                    Add To Group
                 </Button>
             </div>
-        </div>
+        </>
     )
 }
 

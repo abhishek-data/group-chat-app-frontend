@@ -1,31 +1,117 @@
-import { Avatar, Button, List } from 'antd';
-import React, { useRef, useState } from 'react'
+import { Avatar, Button, Form, Input, List, Modal, message } from 'antd';
+import axios from 'axios';
+import React, { useEffect, useRef, useState } from 'react'
+import { API_URL } from '../../utils/config';
+import { DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import UserList from '../userList';
 
 const GroupList = () => {
 
-    const [messages, setMessages] = useState([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [isChatAdded, setIsChatAdded] = useState(false);
-    const messageListRef = useRef(null)
-    const chatListRef = useRef(null)
+    const [groupList, setGroupList] = useState([]);
+    const [newGroup, setNewGroup] = useState('');
+    const [isGroupAdded, setIsGroupAdded] = useState(false);
+    const [isShowUser, setIsShowUser] = useState(false)
+    const groupListRef = useRef(null)
+
+    useEffect(() => {
+        const getGroupList = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const response = await axios.get(`${API_URL}/get-groups`, { headers: { Authorization: token } })
+                const data = await response.data
+                setGroupList(data?.groups)
+            } catch (error) {
+                message.error("something went wrong", 2)
+            }
+        }
+        getGroupList()
+    }, [isGroupAdded])
+
+    const addGroupHandler = async () => {
+        const token = localStorage.getItem('token')
+        if (newGroup.trim === '') return
+        try {
+            const response = await axios.post(`${API_URL}/create-group`, { name: newGroup, isAdmin: true }, { headers: { Authorization: token } })
+            const data = await response.data
+            if (data) {
+                setIsGroupAdded(prev => !prev)
+                message.success(data.message, 2)
+            }
+        } catch (error) {
+            message.error(error, 2)
+        }
+        setNewGroup('')
+    }
+
+    const deleteGroupHandler = async (id) => {
+        const token = localStorage.getItem('token')
+        try {
+            const response = await axios.delete(`${API_URL}/delete-group/${id}`, { headers: { Authorization: token } })
+            const data = await response.data
+            if (data) {
+                setIsGroupAdded(prev => !prev)
+                message.success(data.message, 2)
+            }
+        } catch (error) {
+            message.error(error, 2)
+        }
+        setNewGroup('')
+    }
+
+    const addUserHandler = async () => {
+        const token = localStorage.getItem('token')
+        if (newGroup.trim === '') return
+        try {
+            const response = await axios.post(`${API_URL}/create-group`, { name: newGroup, isAdmin: true }, { headers: { Authorization: token } })
+            const data = await response.data
+            if (data) {
+                setIsGroupAdded(prev => !prev)
+                message.success(data.message, 2)
+            }
+        } catch (error) {
+            message.error(error, 2)
+        }
+        setNewGroup('')
+    }
+
+
+
 
     return (
         <div className="group-container">
-            <div className="message-list" ref={chatListRef}>
+            <div style={{ textAlign: 'center', backgroundColor: '#fc0341', padding: '8px', color: 'white', borderRadius: '8px', marginBottom: '10px' }}>Groups</div>
+            <div className="message-list" ref={groupListRef}>
                 <List
                     itemLayout="horizontal"
-                    dataSource={messages}
-                    renderItem={(message, index) => (
+                    dataSource={groupList}
+                    renderItem={(group, index) => (
                         <List.Item>
                             <List.Item.Meta
-                                avatar={<Avatar>{message?.User?.fullname[0]}</Avatar>}
-                                title={message?.User?.fullname}
-                                description={message.message_text}
+                                avatar={<Avatar>{group?.name[0]}</Avatar>}
+                                title={group?.name}
                             />
+                            <Button title='Add User' onClick={() => setIsShowUser(true)}><PlusCircleOutlined /></Button>
+                            <Button title='Delete Group' style={{ marginLeft: '10px' }} onClick={() => deleteGroupHandler(group.id)}><DeleteOutlined /></Button>
                         </List.Item>
                     )}
                 />
             </div>
+            <div className="create-group-container">
+                <Form.Item>
+                    <Input placeholder='Enter New Group Name' onChange={e => setNewGroup(e.target.value)} />
+                </Form.Item>
+                <Button type="primary" className="button" onClick={addGroupHandler}>
+                    Create Group
+                </Button>
+            </div>
+            <Modal
+                width={300}
+                open={isShowUser}
+                footer={null}
+                onCancel={() => setIsShowUser(false)}
+            >
+                <UserList />
+            </Modal>
         </div>
     )
 }
