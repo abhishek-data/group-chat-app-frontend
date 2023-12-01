@@ -5,9 +5,11 @@ import { API_URL } from '../../utils/config';
 import { DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import UserList from '../userList';
 
-const GroupList = () => {
+const GroupList = ({showChatPage}) => {
 
     const [groupList, setGroupList] = useState([]);
+    const [userList, setUserList] = useState([])
+    const [groupId, setGroupId] = useState(null)
     const [newGroup, setNewGroup] = useState('');
     const [isGroupAdded, setIsGroupAdded] = useState(false);
     const [isShowUser, setIsShowUser] = useState(false)
@@ -58,15 +60,16 @@ const GroupList = () => {
         setNewGroup('')
     }
 
-    const addUserHandler = async () => {
+    const addUserHandler = async (id) => {
         const token = localStorage.getItem('token')
         if (newGroup.trim === '') return
         try {
-            const response = await axios.post(`${API_URL}/create-group`, { name: newGroup, isAdmin: true }, { headers: { Authorization: token } })
+            const response = await axios.get(`${API_URL}/get-users`, { headers: { Authorization: token } })
             const data = await response.data
             if (data) {
-                setIsGroupAdded(prev => !prev)
-                message.success(data.message, 2)
+                setUserList(data.users)
+                setGroupId(id)
+                setIsShowUser(true)
             }
         } catch (error) {
             message.error(error, 2)
@@ -87,10 +90,12 @@ const GroupList = () => {
                     renderItem={(group, index) => (
                         <List.Item>
                             <List.Item.Meta
+                                style={{cursor:'pointer'}}
                                 avatar={<Avatar>{group?.name[0]}</Avatar>}
                                 title={group?.name}
+                                onClick={()=>showChatPage(group)}
                             />
-                            <Button title='Add User' onClick={() => setIsShowUser(true)}><PlusCircleOutlined /></Button>
+                            <Button title='Add User' onClick={() => addUserHandler(group.id)}><PlusCircleOutlined /></Button>
                             <Button title='Delete Group' style={{ marginLeft: '10px' }} onClick={() => deleteGroupHandler(group.id)}><DeleteOutlined /></Button>
                         </List.Item>
                     )}
@@ -98,7 +103,7 @@ const GroupList = () => {
             </div>
             <div className="create-group-container">
                 <Form.Item>
-                    <Input placeholder='Enter New Group Name' onChange={e => setNewGroup(e.target.value)} />
+                    <Input placeholder='Enter New Group Name' value={newGroup} onChange={e => setNewGroup(e.target.value)} />
                 </Form.Item>
                 <Button type="primary" className="button" onClick={addGroupHandler}>
                     Create Group
@@ -108,9 +113,12 @@ const GroupList = () => {
                 width={300}
                 open={isShowUser}
                 footer={null}
-                onCancel={() => setIsShowUser(false)}
+                onCancel={() => {
+                    setIsShowUser(false)
+                    setGroupId(null)
+                }}
             >
-                <UserList />
+                <UserList userList={userList} groupId={groupId}/>
             </Modal>
         </div>
     )

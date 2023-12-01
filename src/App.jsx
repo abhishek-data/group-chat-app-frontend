@@ -9,6 +9,7 @@ import AppHeader from './components/Header'
 import Login from './pages/Auth'
 import ResetPassword from './components/resetPassword';
 import ChatPage from './components/chatPage';
+import MainPage from './components/mainPage';
 
 function App() {
   const [isloggedIn, setIsLoggin] = useState(false)
@@ -36,7 +37,7 @@ function App() {
       children: [
         {
           path: "/",
-          element: isloggedIn ? <ChatPage /> : <Login setIsLoggin={setIsLoggin} />,
+          element: isloggedIn ? <MainPage /> : <Login setIsLoggin={setIsLoggin} />,
         },
         {
           path: "/password/resetpassword/:id",
