@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Input, Button, List, Avatar, message, Tabs } from 'antd';
-import axios from 'axios';
+import { Input, Button, List, Avatar, message, Upload } from 'antd';
 import { API_URL, decodeToken } from '../../utils/config';
-import { RollbackOutlined } from '@ant-design/icons';
+import { RollbackOutlined, UploadOutlined } from '@ant-design/icons';
 import io from 'socket.io-client';
+import axios from 'axios';
 let socket;
 
 const { TextArea } = Input;
@@ -11,24 +11,26 @@ const { TextArea } = Input;
 const ChatPage = ({ setIsShowChat, activeGroupData }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const messageListRef = useRef(null)
-  const chatListRef = useRef(null)
-
+  const messageListRef = useRef(null);
+  const chatListRef = useRef(null);
+  let socket;
 
   useEffect(() => {
-    socket = io(API_URL);
-    const token = localStorage.getItem('token')
+
+    const token = localStorage.getItem('token');
     const getChats = async () => {
       try {
-        const response = await axios.get(`${API_URL}/chat/${activeGroupData.id}`, { headers: { 'Authorization': token } })
-        const data = await response.data
-        setMessages(data.chats)
+        const response = await axios.get(`${API_URL}/chat/${activeGroupData.id}`, {
+          headers: { Authorization: token },
+        });
+        const data = await response.data;
+        setMessages(data.chats);
       } catch (error) {
-        message.error(error.message, 2)
+        message.error(error.message, 2);
       }
-    }
-    getChats()
-  }, [])
+    };
+    getChats();
+  }, []);
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -37,9 +39,11 @@ const ChatPage = ({ setIsShowChat, activeGroupData }) => {
     if (chatListRef.current) {
       chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
     }
-    socket.on('user-message', (message) => { setMessages(prev => ([...prev, message])) })
-  }, [messages])
-
+    socket = io(API_URL);
+    socket.on('user-message', (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (newMessage.trim() === '') {
@@ -47,18 +51,44 @@ const ChatPage = ({ setIsShowChat, activeGroupData }) => {
     }
 
     try {
-      const token = localStorage.getItem('token')
-      const { name } = decodeToken(token)
-      const response = await axios.post(`${API_URL}/chat`, { text: newMessage, name: name, groupId: activeGroupData.id }, { headers: { 'Authorization': token } })
-      const data = await response.data
-      const message = data.chat
-      socket.emit('user-message', message)
-      setMessages([...messages, message])
+      const token = localStorage.getItem('token');
+      const { name } = decodeToken(token);
+      const response = await axios.post(
+        `${API_URL}/chat`,
+        { text: newMessage, name: name, groupId: activeGroupData.id },
+        { headers: { Authorization: token } }
+      );
+      const data = await response.data;
+      const message = data.chat;
+      socket.emit('user-message', message);
+      setMessages([...messages, message]);
     } catch (error) {
-      message.error(error.message, 2)
+      message.error(error.message, 2);
     }
     setNewMessage('');
   };
+
+  const onUpload = async (file) => {
+    const token = localStorage.getItem('token');
+    const { name } = decodeToken(token);
+    const formData = new FormData();
+    formData.append('file', file.file);
+    formData.append('name', name);
+    formData.append('groupId', activeGroupData.id);
+    try {
+      const response = await axios.post(`${API_URL}/upload-file`, formData, {
+        headers: { Authorization: token },
+      });
+      const data = await response.data;
+      const message = data.chat;
+      socket.emit('user-message', message);
+      setMessages([...messages, message]);
+    } catch (error) {
+      message.error(error.message, 2);
+    }
+  }
+
+
 
   return (
     <div className="chat-container">
@@ -90,12 +120,21 @@ const ChatPage = ({ setIsShowChat, activeGroupData }) => {
           onPressEnter={handleSendMessage}
           className="textarea"
         />
+        <Upload
+          // onChange={onUpload}
+          showUploadList={false}
+          customRequest={onUpload}
+          maxCount={1}
+        >
+          <Button icon={<UploadOutlined />} className="upload-button">
+            Upload
+          </Button>
+        </Upload>
         <Button type="primary" onClick={handleSendMessage} className="button">
           Send
         </Button>
       </div>
     </div>
-
   );
 };
 
