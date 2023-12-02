@@ -3,17 +3,20 @@ import { Input, Button, List, Avatar, message, Tabs } from 'antd';
 import axios from 'axios';
 import { API_URL, decodeToken } from '../../utils/config';
 import { RollbackOutlined } from '@ant-design/icons';
+import io from 'socket.io-client';
+let socket;
 
 const { TextArea } = Input;
 
 const ChatPage = ({ setIsShowChat, activeGroupData }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isChatAdded, setIsChatAdded] = useState(false);
   const messageListRef = useRef(null)
   const chatListRef = useRef(null)
 
+
   useEffect(() => {
+    socket = io(API_URL);
     const token = localStorage.getItem('token')
     const getChats = async () => {
       try {
@@ -25,7 +28,7 @@ const ChatPage = ({ setIsShowChat, activeGroupData }) => {
       }
     }
     getChats()
-  }, [isChatAdded])
+  }, [])
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -34,6 +37,7 @@ const ChatPage = ({ setIsShowChat, activeGroupData }) => {
     if (chatListRef.current) {
       chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
     }
+    socket.on('user-message', (message) => { setMessages(prev => ([...prev, message])) })
   }, [messages])
 
 
@@ -46,7 +50,10 @@ const ChatPage = ({ setIsShowChat, activeGroupData }) => {
       const token = localStorage.getItem('token')
       const { name } = decodeToken(token)
       const response = await axios.post(`${API_URL}/chat`, { text: newMessage, name: name, groupId: activeGroupData.id }, { headers: { 'Authorization': token } })
-      setIsChatAdded(prev => !prev)
+      const data = await response.data
+      const message = data.chat
+      socket.emit('user-message', message)
+      setMessages([...messages, message])
     } catch (error) {
       message.error(error.message, 2)
     }
